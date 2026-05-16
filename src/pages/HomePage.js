@@ -9,6 +9,7 @@ const HomePage = () => {
   const [progress, setProgress] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('All');
+  const [apiError, setApiError] = useState(false);
 
   const categories = ['All', 'Compute', 'Storage', 'Networking', 'Security', 'Management'];
 
@@ -18,15 +19,23 @@ const HomePage = () => {
 
   const fetchData = async () => {
     try {
-      const [servicesRes] = await Promise.all([axios.get('/api/services')]);
-      setServices(servicesRes.data.services);
+      const servicesRes = await axios.get('/api/services');
+      // ✅ Safe fallback to [] if undefined
+      setServices(servicesRes.data.services || []);
 
       if (isAuthenticated) {
-        const progressRes = await axios.get('/api/progress');
-        setProgress(progressRes.data.progress);
+        try {
+          const progressRes = await axios.get('/api/progress');
+          setProgress(progressRes.data.progress || []);
+        } catch (err) {
+          setProgress([]);
+        }
       }
     } catch (err) {
-      console.error('Failed to load data');
+      // ✅ API not reachable - show empty state instead of crashing
+      console.error('Backend not available:', err.message);
+      setServices([]);
+      setApiError(true);
     } finally {
       setLoading(false);
     }
@@ -88,6 +97,21 @@ const HomePage = () => {
           <p>Click any service to start learning</p>
         </div>
 
+        {/* API Error Banner */}
+        {apiError && (
+          <div style={{
+            background: 'rgba(255,107,53,0.1)',
+            border: '1px solid rgba(255,107,53,0.3)',
+            borderRadius: '8px',
+            padding: '1rem',
+            marginBottom: '1.5rem',
+            color: 'var(--accent-orange)',
+            fontSize: '0.9rem'
+          }}>
+            ⚠️ Backend API is not connected. Connect your backend to see AWS services.
+          </div>
+        )}
+
         {/* Category Filter */}
         <div className="filter-bar">
           {categories.map(cat => (
@@ -101,15 +125,34 @@ const HomePage = () => {
           ))}
         </div>
 
-        <div className="services-grid">
-          {filteredServices.map(service => (
-            <ServiceCard
-              key={service.id}
-              service={service}
-              progress={getProgress(service.id)}
-            />
-          ))}
-        </div>
+        {/* Services Grid or Empty State */}
+        {filteredServices.length === 0 ? (
+          <div style={{
+            textAlign: 'center',
+            padding: '4rem 2rem',
+            color: 'var(--text-secondary)'
+          }}>
+            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>☁️</div>
+            <h3 style={{ marginBottom: '0.5rem', color: 'var(--text-primary)' }}>
+              No services available
+            </h3>
+            <p>
+              {apiError
+                ? 'Connect your backend API to load AWS services.'
+                : 'No services found for this category.'}
+            </p>
+          </div>
+        ) : (
+          <div className="services-grid">
+            {filteredServices.map(service => (
+              <ServiceCard
+                key={service.id}
+                service={service}
+                progress={getProgress(service.id)}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
