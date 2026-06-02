@@ -54,7 +54,7 @@ This repository contains the frontend application built with React.
 # 🏗️ AWSLearn Frontend Deployment Architecture
 
 <p align="center">
-  <img src="./assets/frontend-architecture.png" alt="AWSLearn Frontend Architecture" width="100%">
+  <img src="./blob/frontend-architecture.png" alt="AWSLearn Frontend Architecture" width="100%">
 </p>
 
 ### Infrastructure Overview
