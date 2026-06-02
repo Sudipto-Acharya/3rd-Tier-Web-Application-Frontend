@@ -340,15 +340,13 @@ frontend/
 
 ---
 
-# 👨‍💻 Author
+## 👨‍💻 Author
 
-### Sudipto Acharya
+**Sudipto Acharya** — DevOps Engineer
 
-DevOps Engineer | Cloud Enthusiast | AWS Practitioner
-
-* GitHub: https://github.com/Sudipto-Acharya
-* LinkedIn: https://www.linkedin.com/in/sudipto-acharya-8a3027258/
-* Portfolio: https://sudipto-acharya.vercel.app
+[![GitHub](https://img.shields.io/badge/GitHub-Sudipto--Acharya-24292E?style=flat&logo=github)](https://github.com/Sudipto-Acharya)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Sudipto%20Acharya-0A66C2?style=flat&logo=linkedin)](https://www.linkedin.com/in/sudipto-acharya-8a3027258/)
+[![Portfolio](https://img.shields.io/badge/Portfolio-sudipto--acharya.vercel.app-FF6B35?style=flat&logo=vercel)](https://sudipto-acharya.vercel.app/)
 
 ---
 
