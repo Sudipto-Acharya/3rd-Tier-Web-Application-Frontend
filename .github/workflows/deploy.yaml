@@ -1,0 +1,71 @@
+name: Deploy React to AWS S3 + CloudFront
+
+on:
+  push:
+    branches:
+      - main        
+  workflow_dispatch: 
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+
+      # ── Step 1: Checkout code ────────────────────────────────────────────────
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      # ── Step 2: Setup Node.js ────────────────────────────────────────────────
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20        # matches your local Node version
+          cache: 'npm'            # caches node_modules for faster builds
+
+      # ── Step 3: Install dependencies ─────────────────────────────────────────
+      - name: Install Dependencies
+        run: npm install
+
+      # ── Step 4: Build React app ───────────────────────────────────────────────
+      # REACT_APP_API_URL is injected from GitHub Secrets at build time
+      # It gets baked into the JS bundle — no .env file needed on the server
+      - name: Build React App
+        run: npm run build
+        env:
+          REACT_APP_API_URL: ${{ secrets.REACT_APP_API_URL }}
+          CI: false    # prevents warnings from being treated as errors
+
+      # ── Step 5: Verify build output ──────────────────────────────────────────
+      - name: List Build Directory
+        run: ls -la ./build
+
+      # ── Step 6: Configure AWS credentials ───────────────────────────────────
+      - name: Configure AWS CLI
+        run: |
+          aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws configure set region ${{ secrets.AWS_REGION }}
+
+      # ── Step 7: Upload build to S3 ───────────────────────────────────────────
+      - name: Sync Build to S3
+        run: |
+          aws s3 sync ./build s3://${{ secrets.AWS_S3_BUCKET }} \
+            --delete \
+            --region ${{ secrets.AWS_REGION }}
+
+      # ── Step 8: Invalidate CloudFront cache ──────────────────────────────────
+      # This forces CloudFront to serve the latest files instead of cached ones
+      - name: Invalidate CloudFront Cache
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
+            --paths "/*"
+
+      # ── Step 9: Print success message ────────────────────────────────────────
+      - name: Deployment Complete
+        run: |
+          echo "========================================"
+          echo "✅ Frontend deployed successfully!"
+          echo "🌐 URL: https://${{ secrets.CLOUDFRONT_DOMAIN }}"
+          echo "========================================"
