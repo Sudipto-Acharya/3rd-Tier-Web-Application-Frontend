@@ -1,3 +1,6 @@
+# Jenkinsfile for React App Deployment to AWS S3 and CloudFront
+# Webhook Trigger: GitHub Push Event
+
 pipeline {
     agent any
 
